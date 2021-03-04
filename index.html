@@ -1,0 +1,102 @@
+<!DOCTYPE html >
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>ASSIGNMENT 4</title>
+    <style>
+
+      #map {
+        height: 100%;
+      }
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script> 
+  </head>
+
+<html>
+  <body>
+    <div id="map"></div>
+
+    <script>
+      var customLabel = {
+        park: {
+          label: 'P'
+        },
+        campground: {
+          label: 'C'
+        }
+      };
+
+        function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          center: new google.maps.LatLng(40.7580, -73.9855),
+          zoom: 11
+        });
+        var infoWindow = new google.maps.InfoWindow;
+
+          downloadUrl('index.php?', function(data) {
+            var markers = data.marker;
+            Array.prototype.forEach.call(markers, function(markerElement) {
+              var mark = markerElement['@attributes']; 
+              var id = mark.id;
+              var name = mark.name;
+              var address = mark.address;
+              var type = mark.type;
+              var point = new google.maps.LatLng(
+                  parseFloat(mark.lat),
+                  parseFloat(mark.lng));
+
+              var infowincontent = document.createElement('div');
+              var strong = document.createElement('strong');
+              strong.textContent = name
+              infowincontent.appendChild(strong);
+              infowincontent.appendChild(document.createElement('br'));
+
+              var text = document.createElement('text');
+              text.textContent = address
+              infowincontent.appendChild(text);
+              var icon = customLabel[type] || {};
+              var marker = new google.maps.Marker({
+                map: map,
+                position: point,
+                label: icon.label
+              });
+              marker.addListener('click', function() {
+                infoWindow.setContent(infowincontent);
+                infoWindow.open(map, marker);
+              });
+            });
+          });
+        }
+
+
+
+      function downloadUrl(url, callback) {
+
+        $.ajax(
+        {
+            type: "GET",
+            url: url,
+            success: function(data) {
+                console.log('AJAX call was successful!');
+                console.log('json data : ',JSON.parse(data));
+                callback(JSON.parse(data));
+            },
+            error: function() {
+                console.log('There was some error performing the AJAX call! Could not retrieve the markers from the PHP file !!! ');
+            }
+        }
+        );
+      }
+
+      function doNothing() {}
+    </script>
+    <script defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDkWWT868AZ7FyRi2JKhA_JWedpHHHwOP4&callback=initMap">
+    </script>
+  </body>
+</html>
